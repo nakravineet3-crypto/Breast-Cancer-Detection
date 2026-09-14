@@ -1,0 +1,147 @@
+[NbConvertApp] Converting notebook week2_preprocessing_baseline.ipynb to notebook
+D:\breast-cancer-masnn\venv\Lib\site-packages\zmq\_future.py:718: RuntimeWarning: Proactor event loop does not implement add_reader family of methods required for zmq. Registering an additional selector thread for add_reader support via tornado. Use `asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())` to avoid this warning.
+  self._get_loop()
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\breast-cancer-masnn\venv\Scripts\jupyter-nbconvert.EXE\__main__.py", line 5, in <module>
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\jupyter_core\application.py", line 284, in launch_instance
+    super().launch_instance(argv=argv, **kwargs)
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\traitlets\config\application.py", line 1080, in launch_instance
+    app.start()
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\nbconvertapp.py", line 420, in start
+    self.convert_notebooks()
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\nbconvertapp.py", line 597, in convert_notebooks
+    self.convert_single_notebook(notebook_filename)
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\nbconvertapp.py", line 563, in convert_single_notebook
+    output, resources = self.export_single_notebook(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\nbconvertapp.py", line 487, in export_single_notebook
+    output, resources = self.exporter.from_filename(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\exporters\exporter.py", line 201, in from_filename
+    return self.from_file(f, resources=resources, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\exporters\exporter.py", line 220, in from_file
+    return self.from_notebook_node(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\exporters\notebook.py", line 36, in from_notebook_node
+    nb_copy, resources = super().from_notebook_node(nb, resources, **kw)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\exporters\exporter.py", line 154, in from_notebook_node
+    nb_copy, resources = self._preprocess(nb_copy, resources)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\exporters\exporter.py", line 353, in _preprocess
+    nbc, resc = preprocessor(nbc, resc)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\preprocessors\base.py", line 48, in __call__
+    return self.preprocess(nb, resources)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\preprocessors\execute.py", line 103, in preprocess
+    self.preprocess_cell(cell, resources, index)
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbconvert\preprocessors\execute.py", line 124, in preprocess_cell
+    cell = self.execute_cell(cell, index, store_history=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\jupyter_core\utils\__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbclient\client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "D:\breast-cancer-masnn\venv\Lib\site-packages\nbclient\client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+import copy
+
+# Class weights: inversely proportional to how often each class appears in training data,
+# so a mistake on the rarer class (benign) counts for more in the loss.
+# Standard "balanced" formula: weight_c = total_samples / (num_classes * count_c)
+class_counts = train_ds.df["label"].value_counts()
+n_benign = class_counts["benign"]
+n_malignant = class_counts["malignant"]
+total = n_benign + n_malignant
+weight_benign = total / (2 * n_benign)
+weight_malignant = total / (2 * n_malignant)
+class_weights = torch.tensor([weight_benign, weight_malignant], dtype=torch.float32).to(device)
+print(f"Class weights -> benign: {weight_benign:.3f}, malignant: {weight_malignant:.3f}")
+
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=2)
+criterion = nn.CrossEntropyLoss(weight=class_weights)
+
+MAX_EPOCHS = 25
+PATIENCE = 6
+best_val_loss = float("inf")
+best_state = None
+patience_counter = 0
+history = {"train_loss": [], "val_loss": [], "train_acc": [], "val_acc": []}
+
+
+def run_epoch(loader, train: bool):
+    model.train() if train else model.eval()
+    total_loss, correct, total = 0.0, 0, 0
+    with torch.set_grad_enabled(train):
+        for images, labels in loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            if train:
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+            total_loss += loss.item() * images.size(0)
+            correct += (outputs.argmax(1) == labels).sum().item()
+            total += images.size(0)
+    return total_loss / total, correct / total
+
+
+for epoch in range(1, MAX_EPOCHS + 1):
+    train_loss, train_acc = run_epoch(train_loader, train=True)
+    val_loss, val_acc = run_epoch(val_loader, train=False)
+    scheduler.step(val_loss)
+
+    history["train_loss"].append(train_loss)
+    history["val_loss"].append(val_loss)
+    history["train_acc"].append(train_acc)
+    history["val_acc"].append(val_acc)
+
+    improved = val_loss < best_val_loss
+    if improved:
+        best_val_loss = val_loss
+        best_state = copy.deepcopy(model.state_dict())
+        patience_counter = 0
+    else:
+        patience_counter += 1
+
+    current_lr = optimizer.param_groups[0]["lr"]
+    flag = "  <- best so far" if improved else ""
+    print(f"Epoch {epoch}/{MAX_EPOCHS}  "
+          f"train_loss={train_loss:.4f} train_acc={train_acc:.3f}  "
+          f"val_loss={val_loss:.4f} val_acc={val_acc:.3f}  "
+          f"lr={current_lr:.6f}{flag}")
+
+    if patience_counter >= PATIENCE:
+        print(f"
+Early stopping: no val_loss improvement for {PATIENCE} epochs.")
+        break
+
+model.load_state_dict(best_state)
+print(f"
+Restored best checkpoint (val_loss={best_val_loss:.4f})")
+
+------------------
+
+
+  [36mCell[39m[36m [39m[32mIn[5][39m[32m, line 73[39m
+[31m    [39m[31mprint(f"[39m
+          ^
+[31mSyntaxError[39m[31m:[39m unterminated f-string literal (detected at line 73)
+
+
+EXIT CODE: 1

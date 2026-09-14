@@ -1,0 +1,30 @@
+Using device: cuda
+train=5279 val=1348 test=1282
+Model created OK, params: 25955
+Class weights -> benign=1.406 malignant=0.776
+Epoch 1/25 train_loss=0.5199 train_acc=0.794 val_loss=0.5102 val_acc=0.741 lr=0.000100  <- best
+Epoch 2/25 train_loss=0.4046 train_acc=0.823 val_loss=0.4567 val_acc=0.777 lr=0.000100  <- best
+Epoch 3/25 train_loss=0.3736 train_acc=0.834 val_loss=0.3744 val_acc=0.854 lr=0.000100  <- best
+Epoch 4/25 train_loss=0.3642 train_acc=0.838 val_loss=0.3972 val_acc=0.828 lr=0.000100
+Epoch 5/25 train_loss=0.3557 train_acc=0.841 val_loss=0.3903 val_acc=0.816 lr=0.000100
+Epoch 6/25 train_loss=0.3541 train_acc=0.838 val_loss=0.4308 val_acc=0.734 lr=0.000050
+Epoch 7/25 train_loss=0.3427 train_acc=0.845 val_loss=0.3611 val_acc=0.805 lr=0.000050  <- best
+Epoch 8/25 train_loss=0.3410 train_acc=0.843 val_loss=0.3861 val_acc=0.764 lr=0.000050
+Epoch 9/25 train_loss=0.3325 train_acc=0.848 val_loss=0.4508 val_acc=0.711 lr=0.000050
+Epoch 10/25 train_loss=0.3322 train_acc=0.848 val_loss=0.4108 val_acc=0.746 lr=0.000025
+Epoch 11/25 train_loss=0.3317 train_acc=0.850 val_loss=0.4458 val_acc=0.715 lr=0.000025
+Epoch 12/25 train_loss=0.3243 train_acc=0.858 val_loss=0.4111 val_acc=0.749 lr=0.000025
+Epoch 13/25 train_loss=0.3169 train_acc=0.854 val_loss=0.4240 val_acc=0.737 lr=0.000013
+Early stopping at epoch 13 (no improvement for 6 epochs)
+Restored best checkpoint, val_loss=0.3611
+              precision    recall  f1-score   support
+
+      benign       0.20      0.47      0.28       250
+   malignant       0.81      0.55      0.65      1032
+
+    accuracy                           0.53      1282
+   macro avg       0.51      0.51      0.47      1282
+weighted avg       0.69      0.53      0.58      1282
+
+Saved results and model checkpoint.
+EXIT CODE: 0

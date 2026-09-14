@@ -1,0 +1,46 @@
+Using device: cuda
+D:\breast-cancer-masnn\src\train_soa.py:84: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  model.load_state_dict(torch.load(os.path.join(PROJECT_ROOT, "data/splits/week4_model.pt"), map_location=device))
+Loaded Week 4 trained MASNN weights.
+Only these parameters are being searched by SOA: ['fc2.weight', 'fc2.bias']
+fc2 search space: 66 numbers
+Before SOA: val_acc=0.9243  test_acc=0.7402
+[SOA] iter 1/15  best_fitness=1.0000
+[SOA] iter 2/15  best_fitness=1.0000
+[SOA] iter 3/15  best_fitness=1.0000
+[SOA] iter 4/15  best_fitness=1.0000
+[SOA] iter 5/15  best_fitness=1.0000
+[SOA] iter 6/15  best_fitness=1.0000
+[SOA] iter 7/15  best_fitness=1.0000
+[SOA] iter 8/15  best_fitness=1.0000
+[SOA] iter 9/15  best_fitness=1.0000
+[SOA] iter 10/15  best_fitness=1.0000
+[SOA] iter 11/15  best_fitness=1.0000
+[SOA] iter 12/15  best_fitness=1.0000
+[SOA] iter 13/15  best_fitness=1.0000
+[SOA] iter 14/15  best_fitness=1.0000
+[SOA] iter 15/15  best_fitness=1.0000
+After SOA:  val_acc=0.2619  test_acc=0.1950
+D:\breast-cancer-masnn\venv\Lib\site-packages\sklearn\metrics\_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+D:\breast-cancer-masnn\venv\Lib\site-packages\sklearn\metrics\_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+D:\breast-cancer-masnn\venv\Lib\site-packages\sklearn\metrics\_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+D:\breast-cancer-masnn\venv\Lib\site-packages\sklearn\metrics\_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+D:\breast-cancer-masnn\venv\Lib\site-packages\sklearn\metrics\_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+D:\breast-cancer-masnn\venv\Lib\site-packages\sklearn\metrics\_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+              precision    recall  f1-score   support
+
+      benign       0.20      1.00      0.33       250
+   malignant       0.00      0.00      0.00      1032
+
+    accuracy                           0.20      1282
+   macro avg       0.10      0.50      0.16      1282
+weighted avg       0.04      0.20      0.06      1282
+
+Saved results.
+EXIT CODE: 0

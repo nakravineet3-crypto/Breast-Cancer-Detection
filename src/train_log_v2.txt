@@ -1,0 +1,24 @@
+Using device: cuda
+train=5279 val=1348 test=1282
+Model created OK, params: 25955
+Class weights -> benign=1.406 malignant=0.776
+Epoch 1/25 train_loss=0.5283 train_acc=0.747 val_loss=0.3985 val_acc=0.880 lr=0.000100  <- best
+Epoch 2/25 train_loss=0.3975 train_acc=0.825 val_loss=0.3478 val_acc=0.865 lr=0.000100
+Epoch 3/25 train_loss=0.3702 train_acc=0.831 val_loss=0.3732 val_acc=0.812 lr=0.000100
+Epoch 4/25 train_loss=0.3629 train_acc=0.832 val_loss=0.3757 val_acc=0.818 lr=0.000100
+Epoch 5/25 train_loss=0.3522 train_acc=0.841 val_loss=0.4203 val_acc=0.757 lr=0.000050
+Epoch 6/25 train_loss=0.3473 train_acc=0.839 val_loss=0.4006 val_acc=0.775 lr=0.000050
+Epoch 7/25 train_loss=0.3438 train_acc=0.841 val_loss=0.4278 val_acc=0.745 lr=0.000050
+Early stopping at epoch 7 (no improvement for 6 epochs)
+Restored best checkpoint, val_acc=0.8798 (val_loss at that epoch=0.3985)
+              precision    recall  f1-score   support
+
+      benign       0.20      0.50      0.29       250
+   malignant       0.81      0.53      0.64      1032
+
+    accuracy                           0.52      1282
+   macro avg       0.51      0.52      0.47      1282
+weighted avg       0.70      0.52      0.57      1282
+
+Saved results and model checkpoint.
+EXIT CODE: 0
