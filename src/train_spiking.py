@@ -24,7 +24,7 @@ from spiking_model import SpikingCNN, create_healthy_model
 from breakhis_dataset import BreakHisDataset
 
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..")
-IMG_SIZE = 64  # smaller than the baseline's 128 — spiking forward pass costs ~25x more per image (one pass per time step)
+IMG_SIZE = 128  # Upgraded to 128x128 for Google Colab GPU training (captures finer cell/nuclear detail)
 BATCH_SIZE = 32
 MAX_EPOCHS = 25
 PATIENCE = 6
