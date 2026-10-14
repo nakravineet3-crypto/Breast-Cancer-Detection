@@ -8,5 +8,4 @@ venv/
 *.pt
 *.h5
 *.ckpt
-datasets/
-data/
+data/raw/
