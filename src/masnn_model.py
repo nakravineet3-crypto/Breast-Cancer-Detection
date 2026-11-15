@@ -91,6 +91,78 @@ class MASNN(nn.Module):
         return weighted_sum
 
 
+class MASNNv2(nn.Module):
+    """
+    Week 6 MASNN: same components (TSGF -> spiking conv -> CBAM -> spiking
+    recurrent layer -> output) but built to train better and give a
+    *continuous* score for ROC-AUC:
+      - wider convs + BatchNorm (threshold 1.0 then sees ~unit-variance input)
+      - conv1 is computed once (input is static, direct encoding)
+      - explicit surrogate gradient, learnable beta
+      - avg+max pooling of spikes, dropout
+      - readout = time-averaged membrane potential of a non-spiking leaky
+        integrator (no spike-count ties), not 25-step spike counts.
+    """
+    def __init__(self, num_steps: int = 15, threshold: float = 1.0, beta: float = 0.9,
+                 widths=(32, 64, 128), hidden: int = 64, dropout: float = 0.3):
+        super().__init__()
+        from snntorch import surrogate
+        grad = surrogate.fast_sigmoid(slope=25)
+        kw = dict(beta=beta, threshold=threshold, spike_grad=grad, learn_beta=True)
+        c1, c2, c3 = widths
+        self.num_steps = num_steps
+
+        self.tsgf = TrainableSelfGuidedFilter(radius=4)
+        self.conv1 = nn.Conv2d(3, c1, 3, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(c1)
+        self.lif1 = snn.Leaky(**kw)
+        self.conv2 = nn.Conv2d(c1, c2, 3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(c2)
+        self.lif2 = snn.Leaky(**kw)
+        self.conv3 = nn.Conv2d(c2, c3, 3, padding=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(c3)
+        self.cbam = CBAM(channels=c3)
+        self.lif3 = snn.Leaky(**kw)
+
+        self.pool = nn.MaxPool2d(2)
+        self.gap = nn.AdaptiveAvgPool2d(1)
+        self.gmp = nn.AdaptiveMaxPool2d(1)
+        self.drop = nn.Dropout(dropout)
+
+        self.fc1 = nn.Linear(2 * c3, hidden)
+        self.rlif = snn.RLeaky(beta=beta, threshold=threshold, linear_features=hidden,
+                               learn_recurrent=True, spike_grad=grad, learn_beta=True)
+        self.fc2 = nn.Linear(hidden, 2)
+        self.out_beta_raw = nn.Parameter(torch.tensor(2.2))  # sigmoid(2.2) ~ 0.9
+
+    def forward(self, x):
+        x = self.tsgf(x)
+        cur1 = self.pool(self.bn1(self.conv1(x)))   # static input -> same every step
+
+        mem1 = self.lif1.init_leaky()
+        mem2 = self.lif2.init_leaky()
+        mem3 = self.lif3.init_leaky()
+        spk_r, mem_r = self.rlif.init_rleaky()
+        out_beta = torch.sigmoid(self.out_beta_raw)
+        mem_out = 0.0
+        logits = 0.0
+
+        for _ in range(self.num_steps):
+            spk1, mem1 = self.lif1(cur1, mem1)
+            cur2 = self.pool(self.bn2(self.conv2(spk1)))
+            spk2, mem2 = self.lif2(cur2, mem2)
+            cur3 = self.cbam(self.bn3(self.conv3(spk2)))
+            cur3 = self.pool(cur3)
+            spk3, mem3 = self.lif3(cur3, mem3)
+
+            flat = torch.cat([self.gap(spk3).flatten(1), self.gmp(spk3).flatten(1)], dim=1)
+            spk_r, mem_r = self.rlif(self.fc1(self.drop(flat)), spk_r, mem_r)
+
+            mem_out = out_beta * mem_out + self.fc2(spk_r)
+            logits = logits + mem_out
+        return logits / self.num_steps
+
+
 def create_healthy_masnn(probe_batch: torch.Tensor, max_attempts: int = 10) -> "MASNN":
     """Same 'born-dead network' safeguard from Week 3 — now for the full MASNN."""
     for attempt in range(1, max_attempts + 1):
